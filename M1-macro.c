@@ -480,7 +480,7 @@ void preserve_other(struct blob* p)
 		{
 			c = i->Text[0];
 
-			if(in_set(c, "!@$~%&:^"))
+			if(in_set(c, "!+@$~%&:^"))
 			{
 				i->Expression = i->Text;
 			}
@@ -552,6 +552,11 @@ char* express_number(int value, char c)
 	int shift;
 	int absolute = FALSE;
 	if('!' == c) number_of_bytes = 1;
+	else if('+' == c)
+	{
+		number_of_bytes = 1;
+		absolute = TRUE;
+	}
 	else if('@' == c) number_of_bytes = 2;
 	else if('$' == c)
 	{
@@ -578,7 +583,7 @@ char* express_number(int value, char c)
 	range_check(value, number_of_bytes, absolute);
 
 	/* don't truncate prior to range check for -1 behavior */
-	if('!' == c) value = value & 0xFF;
+	if(('!' == c) || ('+' == c)) value = value & 0xFF;
 	else if(('@' == c) || ('$' == c)) value = value & 0xFFFF;
 	else if('~' == c) value = value & 0xFFFFFF;
 	else if(('%' == c) || ('&' == c)) value = value & 0xFFFFFFFF;
@@ -712,7 +717,7 @@ void eval_immediates(struct blob* p)
 			   (PPC64LE == Architecture) ||
 			   (KNIGHT == Architecture))
 			{
-				if(in_set(i->Text[0], "%~@!&$"))
+				if(in_set(i->Text[0], "%~@!+&$"))
 				{
 					value = strtoint(i->Text + 1);
 
@@ -734,7 +739,7 @@ void eval_immediates(struct blob* p)
 			}
 			else if((RISCV32 == Architecture) || (RISCV64 == Architecture))
 			{
-				if(in_set(i->Text[0], "%~@!$"))
+				if(in_set(i->Text[0], "%~@!+$"))
 				{
 					value = strtoint(i->Text + 1);
 
